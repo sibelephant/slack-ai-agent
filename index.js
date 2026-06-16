@@ -15,3 +15,24 @@ const log = {
   debug: (msg, ...args) =>
     process.env.NODE_ENV === "dev" && console.log(`[DEBUG] ${msg}`, ...args),
 };
+
+class SlackAIAgent {
+  constructor() {
+    this.app = express();
+    this.slack = new App({
+      token: process.env.SLACK_BOT_TOKEN,
+      signingSecret: process.env.SLACK_SIGNING_SECRET,
+      socketMode: true,
+      appToken: process.env.SLACK_APP_TOKEN,
+    });
+    this.webClient = new webClient(process.env.SLACK_BOT_TOKEN);
+    this.openai = new ChatOpenAI({
+      model: "gpt-4",
+      temperature: 0.3,
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+
+    this.setupslackEvents();
+    this.setupExpress();
+  }
+}
