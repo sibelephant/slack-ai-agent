@@ -35,4 +35,65 @@ class SlackAIAgent {
     this.setupslackEvents();
     this.setupExpress();
   }
+  setupslackEvents() {
+    this.slack.event("team_join", async ({ event }) => {
+      try {
+        log.info(`New user joined: ${event.user.real_name || event.user.name}`);
+        const userInfo = await this.getUserInfo(event.user.id);
+        await this.analyzeAndPostMember(userInfo);
+      } catch (error) {
+        log.error("Error handling team_join event:", error);
+      }
+    });
+    this.slack.event("member_joined_channel", async ({ event }) => {
+      try {
+        if (event.channel_type === "C") {
+          log.info(
+            `Processing member_joined_channel event for public channel: ${event.channel}`,
+          );
+          const userInfo = await this.getUserInfo(event.user);
+          await this.analyzeAndPostMember(userInfo);
+        }
+      } catch (error) {
+        log.error("Error handling member_joined_channel event:", error.message);
+      }
+    });
+    this.slack.error(async (error) => {
+      log.error("Slack error:", error);
+    });
+  }
+  setupExpress() {
+    this.app.use(express.json());
+    this.app.get("/health", (req, res) => {
+      res.json({ status: "healthy", timestamp: new Date().toISOString() });
+    });
+
+    if (process.env.NODE_ENV === "dev") {
+      this.app.post("/test/analyze-member", async (req, res) => {
+        try {
+          const { memberInfo } = req.body;
+          if (!memberInfo) {
+            return res
+              .status(400)
+              .json({ error: "Missing memberInfo in request body" });
+          }
+          const analysis = await this.analyzeAndPostMember(memberInfo);
+          res.json({
+            success: true,
+            analysis,
+            timestamp: new Date().toISOString(),
+          });
+        } catch (error) {
+          log.error("test analysis error:", error.message);
+          res
+            .status(500)
+            .json({ error: "Analysis failed", message: error.message });
+        }
+      });
+    }
+    this.app.use((err, req, res, next) => {
+      log.error("Express error:", err.message);
+      res.status(500).json({ error: "Internal Server Error" });
+    });
+  }
 }
