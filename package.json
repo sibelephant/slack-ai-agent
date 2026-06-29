@@ -1,23 +1,33 @@
 {
   "name": "slack-ai-agent",
-  "version": "1.0.0",
-  "description": "",
+  "version": "2.0.0",
+  "description": "AI-powered Slack agent for member intelligence, onboarding, and workspace analytics",
   "license": "ISC",
   "author": "",
   "type": "module",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "node --watch index.js",
+    "start": "tsx index.ts",
+    "dev": "tsx watch index.ts",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "@langchain/core": "^1.1.49",
-    "@langchain/openai": "^1.4.7",
+    "@langchain/google-genai": "^2.2.0",
     "@slack/bolt": "^4.7.3",
     "@slack/web-api": "^7.17.0",
     "axios": "^1.18.0",
     "dotenv": "^17.4.2",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "pg": "^8.16.2"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.0.1",
+    "@types/pg": "^8.20.0",
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.3"
   }
 }
